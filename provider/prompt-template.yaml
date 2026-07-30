@@ -1,0 +1,117 @@
+identity:
+  author: ""
+  name: prompt-template
+  label:
+    en_US: Prompt Template
+    zh_Hans: 提示词模板
+  description:
+    en_US: Render templates with Dify workflow variables — just like the LLM node's prompt editor, but outputs a string instead of calling an LLM.
+    zh_Hans: 用工作流变量渲染模板，就像大模型节点的 prompt 编辑器一样，但输出字符串而不是调大模型。
+  icon: icon.svg
+  tags:
+    - utilities
+tools:
+  - name: render
+    label:
+      en_US: Render Prompt
+      zh_Hans: 渲染提示词
+    description:
+      en_US: |
+        Replace {{variable}} placeholders with actual workflow variable values.
+
+        Two input boxes:
+        - System Prompt Template (optional): rendered → "system_prompt" output
+        - User Prompt Template (optional): rendered → "user_prompt" output
+
+        Use Dify's variable reference syntax: {{nodes.xxx.output}} or {} in variables panel.
+
+        Use "extra_vars" to pass additional key-value pairs when you need to reference variables not in the direct variable picker.
+      zh_Hans: |
+        将 {{变量名}} 替换为真实的工作流变量值。
+
+        两个输入框：
+        - 系统提示词模板（可选）：渲染后输出到 "system_prompt"
+        - 用户提示词模板（可选）：渲染后输出到 "user_prompt"
+
+        支持 Dify 变量引用语法：{{nodes.xxx.output}} 或从变量面板选择 {}。
+
+        如果需要传入变量面板里选不到的额外变量，可以用 "extra_vars" 传入键值对。
+    parameters:
+      - name: system_template
+        type: string
+        required: false
+        label:
+          en_US: System Prompt Template
+          zh_Hans: 系统提示词模板
+        placeholder:
+          en_US: |
+            You are a helpful assistant.
+            Today is {{nodes.date.current}}.
+          zh_Hans: |
+            你是一个有用的助手。
+            今天是 {{nodes.date.current}}。
+        help:
+          en_US: Supports {{variable}} syntax. Result goes to "system_prompt" output.
+          zh_Hans: 支持 {{变量}} 语法。结果输出到 "system_prompt"。
+      - name: user_template
+        type: string
+        required: false
+        label:
+          en_US: User Prompt Template
+          zh_Hans: 用户提示词模板
+        placeholder:
+          en_US: |
+            Based on the following context, answer the question.
+
+            Context: {{nodes.search.output}}
+
+            Question: {{nodes.input.text}}
+          zh_Hans: |
+            根据以下上下文回答问题。
+
+            上下文：{{nodes.search.output}}
+
+            问题：{{nodes.input.text}}
+        help:
+          en_US: Supports {{variable}} syntax. Result goes to "user_prompt" output.
+          zh_Hans: 支持 {{变量}} 语法。结果输出到 "user_prompt"。
+      - name: extra_vars
+        type: object
+        required: false
+        label:
+          en_US: Extra Variables
+          zh_Hans: 额外变量
+        help:
+          en_US: Key-value pairs of additional variables that can be referenced in templates with {{key}}.
+          zh_Hans: 额外的键值对变量，在模板中用 {{key}} 引用。
+      - name: fallback
+        type: string
+        required: false
+        default: ""
+        label:
+          en_US: Fallback Text for Missing Variables
+          zh_Hans: 缺失变量时的替代文本
+        placeholder:
+          en_US: (empty string)
+          zh_Hans: (空字符串)
+        help:
+          en_US: |
+            What to put in place of variables that aren't found.
+            Default: empty string. Set to "__MISSING__" or similar for debugging.
+          zh_Hans: |
+            当变量未找到时填入什么。
+            默认空字符串。调试时可设为 "__MISSING__" 等。
+      - name: system_only
+        type: boolean
+        required: false
+        default: false
+        label:
+          en_US: System Prompt Only (Single Output)
+          zh_Hans: 仅输出系统提示词（单输出模式）
+        help:
+          en_US: |
+            When enabled, only renders system_template and outputs a single "prompt" string.
+            Use this in LLM node's system prompt slot for clean variable substitution.
+          zh_Hans: |
+            开启后仅渲染 system_template，输出单个 "prompt" 字符串。
+            适合用于 LLM 节点的系统提示词位置，做纯变量替换。
