@@ -1,28 +1,38 @@
-# Prompt Template
-# A lightweight Dify plugin that acts like an LLM node's prompt editor, but outputs text instead of calling an LLM.
-
-version: 0.1.0
-type: plugin
-author: ""
-name: prompt-template
+author: tanzhangjia
+created_at: '2026-07-30T09:00:00Z'
+description:
+  en_US: Render prompt templates with workflow variables — just like the LLM node prompt editor, but outputs a string.
+  zh_Hans: 用工作流变量渲染提示词模板，就像大模型节点的 prompt 编辑器一样，但输出字符串。
+icon: icon.svg
 label:
   en_US: Prompt Template
   zh_Hans: 提示词模板
-description:
-  en_US: Render templates with Dify workflow variables, like the LLM node's prompt editor — but outputs a string instead of invoking an LLM.
-  zh_Hans: 像大模型节点的 prompt 编辑器一样，用工作流变量渲染模板，输出拼接后的字符串。
-icon: icon.svg
+meta:
+  arch:
+    - amd64
+    - arm64
+  runner:
+    entrypoint: main
+    language: python
+    version: '3.12'
+  version: 0.1.0
+name: prompt-template
+plugins:
+  tools:
+    - provider/prompt-template.yaml
+privacy: PRIVACY.md
 resource:
   memory: 268435456
   permission:
     model:
       enabled: false
-    storage:
-      enabled: false
     tool:
+      enabled: false
+    storage:
       enabled: false
     endpoint:
       enabled: false
-plugins:
-  tools:
-    - provider/prompt-template.yaml
+tags:
+  - utilities
+type: plugin
+version: 0.1.0
