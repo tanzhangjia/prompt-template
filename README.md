@@ -1,104 +1,99 @@
 # Prompt Template — Dify Plugin
 
-最简单的那种。就是一个 **变量替换器**。
+The simplest kind. A **variable replacer**.
 
-就像大模型节点的 prompt 编辑框一样，2 个输入框（系统提示词模板 + 用户提示词模板），里面写 `{{变量名}}`，插件把它们替换成真实值输出。
+Just like the LLM node prompt editor: two input boxes (system prompt template + user prompt template) where you write `{{variable}}` placeholders. The plugin substitutes them with real values and outputs the rendered string.
 
-- **源码仓库**: [github.com/tanzhangjia/dify-plugins](https://github.com/tanzhangjia/dify-plugins/tree/main/tanzhangjia/prompt-template)
+- **Source repository**: [github.com/tanzhangjia/prompt-template](https://github.com/tanzhangjia/prompt-template)
 - **License**: MIT
 
-## 和 PrePrompt Bridge 的区别
+## What it does
 
-| | PrePrompt Bridge | Prompt Template |
-|---|---|---|
-| 定位 | 智能预处理：角色、模式、规则、上下文 | 纯模板渲染：变量替换 |
-| 输入 | 十几个结构化参数 | 2 个文本框 + 额外变量 |
-| 复杂度 | 高 | 极低 |
-| 维护 | 有 | 无 |
+| Feature | Description |
+|---|---|
+| Inputs | System prompt template, user prompt template, optional extra variables |
+| Outputs | `system_prompt`, `user_prompt`, or a single `prompt` string |
+| Logic | Pure placeholder substitution with Python standard library `re` |
+| Dependencies | None beyond the Dify plugin SDK |
 
-## 安装
+It is **not** a Jinja engine. No loops, no conditionals, no filters — just `{{variable}}` replacement, matching the mental model of the Dify prompt editor.
+
+## Installation
 
 ```bash
-# 在 Dify 插件目录下
+# From the plugin source directory
 dify plugin install prompt-template/
 ```
 
-## 使用
+Or install the packaged `.difypkg` via the Dify plugin management UI / CLI.
 
-### 简易用法：替换 LLM 节点系统提示词
+## Usage
 
-1. 在工作流中加入 **Prompt Template** 节点
-2. 在 **系统提示词模板** 里写：
+### Simple: replace the LLM node system prompt
 
-```
-你是一个翻译助手。
-今天的日期是 {{nodes.date.current}}。
-目标语言：{{nodes.input.lang}}
-```
-
-3. 把输出的 `prompt` 传给 LLM 节点的系统提示词
-
-### 完整用法：系统 + 用户提示词
-
-1. **系统提示词模板**：写系统级提示词
-2. **用户提示词模板**：写用户级提示词，例如：
+1. Add a **Prompt Template** node to your workflow.
+2. In **system prompt template**, write:
 
 ```
-根据以下信息回答问题。
-
-背景信息：{{nodes.search.output}}
-
-用户问题：{{nodes.input.text}}
+You are a translation assistant.
+Today's date is {{nodes.date.current}}.
+Target language: {{nodes.input.lang}}
 ```
 
-3. 分别使用输出的 `system_prompt` 和 `user_prompt`
+3. Pass the rendered `prompt` output to the LLM node system prompt.
 
-### 额外变量
+### Full: system + user prompt
 
-如果有些变量在 Dify 的变量面板里选不到（比如某个节点的嵌套属性），用 **额外变量** 传入键值对。
+1. **System prompt template**: write the system-level prompt.
+2. **User prompt template**: write the user-level prompt, for example:
 
-## 输出
+```
+Answer based on the information below.
 
-### 双输出模式（默认）
+Background: {{nodes.search.output}}
 
-| 输出 | 含义 |
-|------|------|
-| `system_prompt` | 系统提示词模板渲染结果 |
-| `user_prompt` | 用户提示词模板渲染结果 |
+User question: {{nodes.input.text}}
+```
 
-### 单输出模式（`system_only=true`）
+3. Use the `system_prompt` and `user_prompt` outputs respectively.
 
-| 输出 | 含义 |
-|------|------|
-| `prompt` | 仅 system_template 的渲染结果 |
+### Extra variables
 
-## 就是这么简单
+If a variable is not selectable from the Dify variable panel (for example a nested property of a node), pass it in as a key-value pair in **extra variables**.
 
-没有角色系统。没有模式系统。没有规则引擎。没有模板钩子。
+## Output
 
-就一个正则替换。
+### Dual-output mode (default)
 
-## 和 Jinja 的区别
+| Output | Meaning |
+|---|---|
+| `system_prompt` | Rendered system prompt template |
+| `user_prompt` | Rendered user prompt template |
 
-这个插件**不是** Jinja 模板引擎，也不尝试替代它。两者解决的问题不同：
+### Single-output mode (`system_only=true`)
 
-| | Jinja2 | Prompt Template（本插件） |
-|---|---|---|
-| 定位 | 通用模板引擎 | Dify 工作流内的提示词变量替换器 |
-| 语法 | `{{ var }}`、`{% if %}`、`{% for %}`、过滤器、继承、宏 | 仅 `{{ variable }}` 简单替换 |
-| 逻辑能力 | 完整编程能力（循环、条件、过滤器、表达式） | 无逻辑，纯文本替换 |
-| 运行环境 | Python 进程内任意地方 | Dify 工作流节点，输入输出都是字符串 |
-| 依赖 | Jinja2 库（约 300KB+） | 无额外依赖，只用 Python 标准库 `re` |
-| 学习成本 | 中——语法多、概念多 | 极低，和 LLM 节点 prompt 编辑器一致 |
-| 用途 | 生成任意文档、配置文件、邮件等 | 专门拼提示词，配合 LLM 节点使用 |
+| Output | Meaning |
+|---|---|
+| `prompt` | Rendered result of `system_template` only |
 
-**为什么不用 Jinja？**
+## Credentials & connection
 
-1. **和 Dify 心智一致**：Dify 自带的 prompt 编辑器和变量面板就用 `{{变量}}` 语法，本插件保持同一个心智，用户不用再学一套模板语法。
-2. **更安全**：Jinja 的 `{% ... %}` 能做任意表达式执行，在接收不可信模板/输入的场景下存在模板注入风险。本插件只做无逻辑的占位符替换，天然免疫这类问题。
-3. **更轻量**：不需要 Jinja2 依赖，插件体积和运行时开销都更小。
-4. **场景匹配**：提示词拼接从来不需要循环和条件分支——如果 prompt 需要逻辑，那应该用 Code 节点或工作流条件分支去算，而不是在模板里写逻辑。
+The plugin requires **no credentials** and makes **no network connections**. `storage`, `endpoint`, `tool`, and `model` permissions are all disabled in `manifest.yaml`. Everything runs in-memory as a pure string transformation.
 
-**什么时候才需要 Jinja？**
+## Security
 
-如果你需要在模板里做循环、条件判断、过滤器、宏，或者生成非提示词的多结构文本，那用 Jinja（或 Dify 内置的 Code 节点）更合适。本插件是"纯拼接"场景的最简解。
+- No network requests, no file operations, no external services.
+- No template injection risk: the plugin only replaces `{{variable}}` placeholders and does not evaluate expressions.
+
+## Why not Jinja?
+
+1. **Consistent with Dify's mental model** — the prompt editor and variable panel already use `{{variable}}` syntax, so users do not need to learn another template syntax.
+2. **Safer** — Jinja's `{% ... %}` can execute arbitrary expressions and carries template-injection risk with untrusted input. This plugin is immune by design.
+3. **Lighter** — no Jinja2 dependency; smaller runtime and package size.
+4. **Right fit** — prompt stitching rarely needs loops or branches; if logic is required, use a Code node or a workflow conditional instead.
+
+**When do you need Jinja?** If you need loops, conditionals, filters, macros, or generating non-prompt structured documents, use Jinja (or Dify's built-in Code node). This plugin is the minimal solution for "pure concatenation".
+
+## Localized README
+
+A Chinese version is available in `README.zh_Hans.md`.
